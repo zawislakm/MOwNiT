@@ -10,6 +10,16 @@ min_x = 0
 max_x = 3 * pi
 
 
+def Hermit(X, nodes, n, derivative):
+    hermitParameters = getHermitParametrs(nodes, n, derivative)
+    ans = 0
+    p = 1
+    for i in range(1, n * 2 + 1):
+        ans += p * hermitParameters[i][i]
+        p *= (X - hermitParameters[i][0])
+    return ans
+
+
 def f(x):
     if not isinstance(x, float):
         return [sin(m * i) * sin(k * i ** 2 / pi) for i in x]
@@ -22,36 +32,6 @@ def df(x):  # pochodna
     return m * cos(m * x) * sin(k * x ** 2 / pi) + sin(m * x) * (2 * k * x / pi) * cos(k * x ** 2 / pi)
 
 
-def Hermit(x, nodes, n, derivative):
-    # Initialize the Hermit parameters
-    hermitParameters = [[0 for _ in range(n * 2 + 1)] for _ in range(n * 2 + 1)]
-
-    # Fill in the odd rows of the Hermit parameter matrix
-    for i in range(1, n * 2 + 1, 2):
-        node_index = (i - 1) // 2
-        hermitParameters[i][1] = f(nodes[node_index])
-        hermitParameters[i + 1][1] = f(nodes[node_index])
-        hermitParameters[i + 1][2] = derivative(nodes[node_index])
-        hermitParameters[i][0] = nodes[node_index]
-        hermitParameters[i + 1][0] = nodes[node_index]
-
-    # Fill in the even rows of the Hermit parameter matrix
-    for i in range(2, n * 2 + 1, 2):
-        for j in range(2, i + 1):
-            node_index = (i - j) // 2
-            hermitParameters[i][j] = (hermitParameters[i][j - 1] - hermitParameters[i - 1][j - 1]) / (
-                        nodes[node_index] - nodes[node_index + j // 2])
-
-    # Evaluate the Hermit polynomial at x
-    ans = 0
-    prod = 1
-    for i in range(1, n * 2 + 1):
-        ans += prod * hermitParameters[i][i]
-        prod *= (x - hermitParameters[i][0])
-
-    return ans
-
-
 def chebyshev_disrtibution(n, a, b):  # b > a
     # https://pl.wikipedia.org/wiki/W%C4%99z%C5%82y_Czebyszewa
     cheby_points = []
@@ -59,6 +39,24 @@ def chebyshev_disrtibution(n, a, b):  # b > a
         xk = 0.5 * (b + a) + 0.5 * (b - a) * cos(((2 * k - 1) * np.pi) / (2 * n))
         cheby_points.append(xk)
     return cheby_points[::-1]
+
+
+def getHermitParametrs(nodes, n, derivative):
+    hermitParameters = [[0 for _ in range(n * 2 + 1)] for _ in range(n * 2 + 1)]
+    for i in range(1, n * 2 + 1, 2):
+        index = i // 2
+        hermitParameters[i][0] = nodes[index]
+        hermitParameters[i + 1][0] = nodes[index]
+        hermitParameters[i][1] = f(nodes[(i - 1) // 2])
+        hermitParameters[i + 1][1] = f(nodes[(i - 1) // 2])
+        hermitParameters[i + 1][2] = derivative(nodes[index])
+
+    for i in range(1, n * 2 + 1):
+        for j in range(2, i + 1):
+            if i % 2 == 1 or j > 2:
+                hermitParameters[i][j] = (hermitParameters[i][j - 1] - hermitParameters[i - 1][j - 1]) / (
+                        nodes[(i - 1) // 2] - nodes[(i - j) // 2])
+    return hermitParameters
 
 
 def drawFunction():  # draw given function
@@ -73,7 +71,6 @@ def drawHermite(nodes, n, derivative, type):
     plot.suptitle("Interpolacja Hermit'a na " + type + " na " + str(n) + " węzłach")
     plot.plot(X, f(X), label="Funckja")
     plot.plot(X, Hermit(X, nodes, n, derivative), label="Interpolacja")
-    plot.plot(X, hermite_interpolation(X, nodes), label="Interpolacja2")
 
     plot.xlabel("X")
     plot.ylabel("Y")
@@ -141,7 +138,7 @@ def tableHermite(ens, X, derivative):
 ens = [3, 4, 5, 7, 9, 10, 11, 12, 15, 20, 30, 40, 50, 60, 75]
 
 # Interpolate using Hermite method
-n = 5
+n = 6
 
 cheby_nodes = chebyshev_disrtibution(n, min_x, max_x)
 parallel_nodess = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
@@ -149,10 +146,9 @@ X = np.arange(min_x, max_x + 0.01, 0.01)
 print(parallel_nodess, "nody")
 type_p = "węzłach równoległych"
 type_c = "węzłach Czebyszewa"
-# drawHermite(parallel_nodess, n, df, type_p)
+drawHermite(parallel_nodess, n, df, type_p)
 
-# drawHermiteBothNodes(parallel_nodess, cheby_nodes, n, df)
+drawHermiteBothNodes(parallel_nodess, cheby_nodes, n, df)
 
-# tableHermite(ens, X, df)
-# hermite_interpolation(X,parallel_nodess)
-Hermit_to_Newton(X, parallel_nodess, n, df)
+tableHermite(ens, X, df)
+
