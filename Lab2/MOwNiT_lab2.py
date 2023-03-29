@@ -182,22 +182,22 @@ def sqrdiffrence(X, interpoleted, n):
     return ans
 
 
-n = 11  # number of nodes
+n = 75  # number of nodes
 X = np.arange(min_x, max_x + 0.01, 0.01)
 parallel_nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
 cheby_nodes = chebyshev_disrtibution(n, min_x, max_x)
 type_p = "węzłach równoległych"
 type_c = "węzłach Czebyszewa"
 
-drawFunction()
-drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
-drawTogetherLagrangeNewton(cheby_nodes, n, type_c)
+# drawFunction()
+# drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
+# drawTogetherLagrangeNewton(cheby_nodes, n, type_c)
 drawNewton2(parallel_nodes, cheby_nodes, n)
-drawLagrange2(parallel_nodes, cheby_nodes, n)
-drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
-drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
-drawLagrange2(parallel_nodes, cheby_nodes, n)
-drawNewton2(parallel_nodes, cheby_nodes, n)
+# drawLagrange2(parallel_nodes, cheby_nodes, n)
+# drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
+# drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
+# drawLagrange2(parallel_nodes, cheby_nodes, n)
+# drawNewton2(parallel_nodes, cheby_nodes, n)
 
 
 def tableLagrange(ens, X):
@@ -236,3 +236,5 @@ ens = [3, 4, 5, 7, 9, 10, 11, 12, 15, 20, 30, 40, 50, 60, 75]
 # tableNewton(ens, X)
 print()
 # tableLagrange(ens, X)
+
+

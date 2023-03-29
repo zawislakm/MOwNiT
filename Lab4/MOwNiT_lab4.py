@@ -174,3 +174,4 @@ X = np.arange(min_x, max_x + 0.01, 0.01)
 
 cubic_spline(X, cheby_nodes, n, 0)
 quadratic_spline(X, cheby_nodes, n, 0)
+

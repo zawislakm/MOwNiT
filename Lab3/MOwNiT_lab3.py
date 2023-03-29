@@ -1,7 +1,7 @@
-import numpy as np
-import pandas as pd
 from math import pi, cos, sin
 import matplotlib.pyplot as plot
+import numpy as np
+import pandas as pd
 
 k = 1
 m = 2
@@ -12,12 +12,34 @@ max_x = 3 * pi
 
 def Hermit(X, nodes, n, derivative):
     hermitParameters = getHermitParametrs(nodes, n, derivative)
-    ans = 0
-    p = 1
+    ans = [0 for _ in range(len(X))]
+    p = [1 for _ in range(len(X))]
+
     for i in range(1, n * 2 + 1):
-        ans += p * hermitParameters[i][i]
-        p *= (X - hermitParameters[i][0])
+        for j in range(len(X)):
+            ans[j] += p[j] * hermitParameters[i][i]
+            p[j] *= (X[j] - hermitParameters[i][0])
     return ans
+
+
+def getHermitParametrs(nodes, n, derivative):
+    matrix = [[0 for _ in range(n * 2 + 1)] for _ in range(n * 2 + 1)]
+    for i in range(1, n * 2 + 1, 1):
+        index = (i - 1) // 2
+        matrix[i][0] = nodes[index]
+        matrix[i][1] = f(nodes[(i - 1) // 2])
+        if i % 2 == 0:
+            matrix[i][2] = derivative(nodes[index])
+
+    for i in range(1, n * 2 + 1):
+        now_node = nodes[(i - 1) // 2]
+        for j in range(2, i + 1):
+            if i % 2 == 1 or j > 2:
+                matrix[i][j] = (matrix[i][j - 1] - matrix[i - 1][j - 1]) / (
+                        now_node - nodes[(i - j) // 2])
+
+
+    return matrix
 
 
 def f(x):
@@ -41,25 +63,7 @@ def chebyshev_disrtibution(n, a, b):  # b > a
     return cheby_points[::-1]
 
 
-def getHermitParametrs(nodes, n, derivative):
-    hermitParameters = [[0 for _ in range(n * 2 + 1)] for _ in range(n * 2 + 1)]
-    for i in range(1, n * 2 + 1, 2):
-        index = i // 2
-        hermitParameters[i][0] = nodes[index]
-        hermitParameters[i + 1][0] = nodes[index]
-        hermitParameters[i][1] = f(nodes[(i - 1) // 2])
-        hermitParameters[i + 1][1] = f(nodes[(i - 1) // 2])
-        hermitParameters[i + 1][2] = derivative(nodes[index])
-
-    for i in range(1, n * 2 + 1):
-        for j in range(2, i + 1):
-            if i % 2 == 1 or j > 2:
-                hermitParameters[i][j] = (hermitParameters[i][j - 1] - hermitParameters[i - 1][j - 1]) / (
-                        nodes[(i - 1) // 2] - nodes[(i - j) // 2])
-    return hermitParameters
-
-
-def drawFunction():  # draw given function
+def drawFunction():
     plot.plot(X, f(X), label="Funckja")
     plot.xlabel("X")
     plot.ylabel("Y")
@@ -138,7 +142,7 @@ def tableHermite(ens, X, derivative):
 ens = [3, 4, 5, 7, 9, 10, 11, 12, 15, 20, 30, 40, 50, 60, 75]
 
 # Interpolate using Hermite method
-n = 6
+n = 14
 
 cheby_nodes = chebyshev_disrtibution(n, min_x, max_x)
 parallel_nodess = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
@@ -151,4 +155,3 @@ drawHermite(parallel_nodess, n, df, type_p)
 drawHermiteBothNodes(parallel_nodess, cheby_nodes, n, df)
 
 tableHermite(ens, X, df)
-
