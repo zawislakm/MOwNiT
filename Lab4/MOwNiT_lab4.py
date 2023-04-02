@@ -52,9 +52,15 @@ def delta(i, nodes):
     return d
 
 
-def cubic_spline(X, nodes, n, type):
+def cubic_spline(X, nodes, n, type=0):
     matrix = [[0 for _ in range(n)] for _ in range(n)]
     vector = [0 for _ in range(n)]
+
+    def delta2(i, nodes):
+        return (delta(i + 1, nodes) - delta(i, nodes)) / (nodes[i + 1] - nodes[i - 1])
+
+    def delta3(i, nodes):
+        return (delta2(i + 1, nodes) - delta2(i, nodes)) / (nodes[i + 2] - nodes[i - 1])
 
     for i in range(1, n - 1):  # 1 brzegi3
         matrix[i][i - 1] = hi(i, nodes)
@@ -62,22 +68,23 @@ def cubic_spline(X, nodes, n, type):
         matrix[i][i + 1] = hi(i + 1, nodes)
         vector[i] = delta(i + 1, nodes) - delta(i, nodes)
 
-
-    #change types
     if type == 0:
-        matrix[0][0] = 2
-        matrix[0][1] = 1
-        matrix[n - 1][n - 2] = 2
-        matrix[n - 1][n - 1] = 1
-        vector[0] = 0
-        vector[n - 1] = 0
-    else:
+        # natural
         matrix[0][0] = 1
         matrix[0][1] = 0
         matrix[n - 1][n - 2] = 0
         matrix[n - 1][n - 1] = 1
         vector[0] = 0
         vector[n - 1] = 0
+    else:
+        # clamped
+        matrix[0][0] = -1 * hi(1, nodes)
+        matrix[0][1] = hi(1, nodes)
+        vector[0] = hi(1, nodes) ** 2 * delta3(1, nodes)
+
+        matrix[n - 1][n - 2] = hi(n - 1, nodes)
+        matrix[n - 1][n - 1] = -1 * hi(n - 1, nodes)
+        vector[n - 1] = -1 * hi(n - 1, nodes) ** 2 * delta3(n - 3, nodes)
 
     ROs = np.linalg.solve(matrix, vector)
 
@@ -117,25 +124,26 @@ def cubic_spline(X, nodes, n, type):
     return ans
 
 
-def quadratic_spline(X, nodes, n, mode):
+def quadratic_spline(X, nodes, n, type=0):
     matrix = [[0 for _ in range(n)] for _ in range(n)]
     vector = [0 for _ in range(n)]
 
-    for i in range(1, n - 1):  # 1 brzegi2
+    for i in range(1, n):
         matrix[i][i - 1] = 1
         matrix[i][i] = 1
         vector[i] = 2 * delta(i, nodes)
-    vector[n - 1] = 2 * delta(n - 1, nodes)
 
-    #change types
-    if mode == 0:
-        matrix[0][0] = 1
-        matrix[0][1] = 0
-        vector[0] = delta(1, nodes)
-    else:
+    # change types
+    if type == 0:
+        # natural
         matrix[0][0] = 1
         matrix[0][1] = 0
         vector[0] = 0
+    else:
+        # clamped
+        matrix[0][0] = 1
+        matrix[0][1] = 0
+        vector[0] = delta(2, nodes)
 
     matrix[n - 1][n - 2] = 1
     matrix[n - 1][n - 1] = 1
@@ -167,11 +175,125 @@ def quadratic_spline(X, nodes, n, mode):
     return ans
 
 
-n = 5
+def drawFunction():
+    plot.plot(X, f(X), label="Funckja")
+    plot.xlabel("X")
+    plot.ylabel("Y")
+    plot.legend()
+    plot.show()
+
+
+def drawCubicBothNodes(X, paraller, cheby, n, type=0):
+    fig, axs = plot.subplots(1, 2)
+
+    if type == 0:
+        mode = "naturalnym"
+    else:
+        mode = "z zaciśniętymi granicami"
+
+    fig.suptitle("Interpolacja sześcienna  na " + str(n) + " węzłach z warunkiem " + mode)
+    axs[0].plot(X, f(X), label="Funkcja")
+    axs[0].plot(X, cubic_spline(X, paraller, n, type), label="Interpolacja")
+    axs[0].scatter(paraller, f(paraller), color="red", label="Punkty wspólne")
+    axs[0].set_title("Interpolacja na węzłach równoległych")
+    axs[0].set_xlabel("X")
+    axs[0].set_ylabel("Y")
+    axs[0].legend()
+
+    axs[1].plot(X, f(X), label="Funkcja")
+    axs[1].plot(X, cubic_spline(X, cheby, n, type), label="Interpolacja")
+    axs[1].scatter(cheby, f(cheby), color="red", label="Punkty wspólne")
+    axs[1].set_title("Interpolacja na węzłach Czebyszewa")
+    axs[1].set_xlabel("X")
+    axs[1].set_ylabel("Y")
+    axs[1].legend()
+
+    fig.set_size_inches(14, 7)
+    plot.show()
+
+
+def drawCubic(X, nodes, n, type=0):
+    if type == 0:
+        mode = "naturalnym"
+    else:
+        mode = "z zaciśniętymi granicami"
+
+    if nodes[0] == 0:
+        nodes_mode = "równoległych"
+    else:
+        nodes_mode = "Czebyszewa"
+    plot.suptitle("Interpolacja sześcienna na " + str(n) + "na węzłach" + nodes_mode + " z warunkiem granicznym" + mode)
+    plot.plot(X, f(X), label="Funckja")
+    plot.plot(X, cubic_spline(X, nodes, n, type), label="Interpolacja")
+    plot.scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    plot.xlabel("X")
+    plot.ylabel("Y")
+    plot.legend()
+    plot.show()
+
+
+def drawQuad(X, nodes, n, type=0):
+    if type == 0:
+        mode = "naturalnym"
+    else:
+        mode = "z zaciśniętymi granicami"
+
+    if nodes[0] == 0:
+        nodes_mode = "równoległych"
+    else:
+        nodes_mode = "Czebyszewa"
+    plot.suptitle("Interpolacja kwadratowa na " + str(n) + "na węzłach" + nodes_mode + " z warunkiem granicznym" + mode)
+    plot.plot(X, f(X), label="Funckja")
+    plot.plot(X, cubic_spline(X, nodes, n, type), label="Interpolacja")
+    plot.scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    plot.xlabel("X")
+    plot.ylabel("Y")
+    plot.legend()
+    plot.show()
+
+
+def drawQuadBothNodes(X, paraller, cheby, n, type=0):
+    fig, axs = plot.subplots(1, 2)
+
+    if type == 0:
+        mode = "naturalnym"
+    else:
+        mode = "z zaciśniętymi granicami"
+
+    fig.suptitle("Interpolacja kwadratowa na " + str(n) + " węzłach z warunkiem " + mode)
+    axs[0].plot(X, f(X), label="Funkcja")
+    axs[0].plot(X, quadratic_spline(X, paraller, n, type), label="Interpolacja")
+    axs[0].scatter(paraller, f(paraller), color="red", label="Punkty wspólne")
+    axs[0].set_title("Interpolacja na węzłach równoległych")
+    axs[0].set_xlabel("X")
+    axs[0].set_ylabel("Y")
+    axs[0].legend()
+
+    axs[1].plot(X, f(X), label="Funkcja")
+    axs[1].plot(X, quadratic_spline(X, cheby, n, type), label="Interpolacja")
+    axs[1].scatter(cheby, f(cheby), color="red", label="Punkty wspólne")
+    axs[1].set_title("Interpolacja na węzłach Czebyszewa")
+    axs[1].set_xlabel("X")
+    axs[1].set_ylabel("Y")
+    axs[1].legend()
+
+    fig.set_size_inches(14, 7)
+    plot.show()
+
+
+n = 500
 cheby_nodes = chebyshev_disrtibution(n, min_x, max_x)
 parallel_nodess = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
 X = np.arange(min_x, max_x + 0.01, 0.01)
 
-cubic_spline(X, cheby_nodes, n, 0)
-quadratic_spline(X, cheby_nodes, n, 0)
+# cubic_spline(X, cheby_nodes, n, 1)
+# quadratic_spline(X, cheby_nodes, n, 1)
 
+# drawCubicBothNodes(X, parallel_nodess, cheby_nodes, n, 0)
+# drawCubicBothNodes(X, parallel_nodess, cheby_nodes, n, 1)
+#
+# drawQuadBothNodes(X, parallel_nodess, cheby_nodes, n, 0)
+# drawQuadBothNodes(X, parallel_nodess, cheby_nodes, n, 1)
+
+drawCubic(X, parallel_nodess, n, 0)
+drawQuad(X, parallel_nodess, n, 1)
