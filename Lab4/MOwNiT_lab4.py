@@ -42,6 +42,38 @@ def sqrdiffrence(X, interpoleted, n):
     return ans
 
 
+def tableCubic(ens, X):
+    outcome = []
+    for n in ens:
+        parallel_nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
+        CPN = cubic_spline(X, parallel_nodes, n, 0)
+        CPC = cubic_spline(X, parallel_nodes, n, 1)
+        outcome.append(
+            [n, diffrecne(X, CPN, n), sqrdiffrence(X, CPN, n), diffrecne(X, CPC, n), sqrdiffrence(X, CPC, n)])
+
+    df = pd.DataFrame(outcome,
+                      columns=["n", "Cubic natural max error", "Cubic natural square error",
+                               "Cubic clamped max error", "Cubic clamped square error"])
+
+    return df
+
+
+def tableQuad(ens, X):
+    outcome = []
+    for n in ens:
+        parallel_nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
+        CPN = quadratic_spline(X, parallel_nodes, n, 0)
+        CPC = quadratic_spline(X, parallel_nodes, n, 1)
+        outcome.append(
+            [n, diffrecne(X, CPN, n), sqrdiffrence(X, CPN, n), diffrecne(X, CPC, n), sqrdiffrence(X, CPC, n)])
+
+    df = pd.DataFrame(outcome,
+                      columns=["n", "Quadratic natural max error", "Quadratic natural square error",
+                               "Quadratic clamped max error", "Quadratic clamped square error"])
+    print(df)
+    return df
+
+
 def hi(i, nodes):
     h = nodes[i] - nodes[i - 1]  # dif between nodes
     return h
@@ -110,7 +142,7 @@ def cubic_spline(X, nodes, n, type=0):
         return d
 
     ans = [0 for _ in range(len(X))]
-    for j in range(len(X)):
+    for j in range(1, len(X)):
         i = 0
         while i < len(nodes) - 1 and nodes[i] < X[j]:
             i += 1
@@ -163,7 +195,7 @@ def quadratic_spline(X, nodes, n, type=0):
 
     ans = [0 for _ in range(len(X))]
 
-    for j in range(len(X)):
+    for j in range(1, len(X)):
         i = 0
         while i < len(nodes) - 1 and nodes[i] < X[j]:
             i += 1
@@ -183,13 +215,103 @@ def drawFunction():
     plot.show()
 
 
+def drawCubic(X, nodes, n, type=0):
+    if type == 0:
+        mode = "naturalnych granic"
+    else:
+        mode = "zaciśniętych granic"
+
+    if nodes[0] == 0:
+        nodes_mode = "równoległych"
+    else:
+        nodes_mode = "Czebyszewa"
+    plot.suptitle(
+        "Interpolacja sześcienna na " + str(n) + " na węzłach " + nodes_mode + " z warunkiem " + mode)
+    plot.plot(X, f(X), label="Funckja")
+    plot.plot(X, cubic_spline(X, nodes, n, type), label="Interpolacja")
+    plot.scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    plot.xlabel("X")
+    plot.ylabel("Y")
+    plot.legend()
+    plot.show()
+
+
+def drawQuad(X, nodes, n, type=0):
+    if type == 0:
+        mode = "naturalnych granic"
+    else:
+        mode = "zaciśniętych granic"
+
+    if nodes[0] == 0:
+        nodes_mode = "równoległych"
+    else:
+        nodes_mode = "Czebyszewa"
+    fig = plot.figure(figsize=(12, 6))
+
+    plot.suptitle(
+        "Interpolacja kwadratowa na " + str(n) + " na węzłach " + nodes_mode + " z warunkiem " + mode)
+    plot.plot(X, f(X), label="Funckja")
+    plot.plot(X, cubic_spline(X, nodes, n, type), label="Interpolacja")
+    plot.scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    plot.xlabel("X")
+    plot.ylabel("Y")
+    plot.legend()
+    plot.show()
+
+
+def drawCubicBothType(X, nodes, n):
+    fig, axs = plot.subplots(1, 2)
+
+    fig.suptitle("Interpolacja sześcienna na " + str(n) + " węzłach równoległych")
+    axs[0].plot(X, f(X), label="Funkcja")
+    axs[0].plot(X, cubic_spline(X, nodes, n, 0), label="Interpolacja")
+    axs[0].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    axs[0].set_title("Interpolacja z warunkiem naturalnych granic")
+    axs[0].set_xlabel("X")
+    axs[0].set_ylabel("Y")
+    axs[0].legend()
+
+    axs[1].plot(X, f(X), label="Funkcja")
+    axs[1].plot(X, cubic_spline(X, nodes, n, 1), label="Interpolacja")
+    axs[1].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    axs[1].set_title("Interpolacja z warunkiem z zaciśnietymi granicami")
+    axs[1].set_xlabel("X")
+    axs[1].set_ylabel("Y")
+    axs[1].legend()
+    fig.set_size_inches(14, 7)
+    plot.show()
+
+
+def drawQuadBothType(X, nodes, n):
+    fig, axs = plot.subplots(1, 2)
+
+    fig.suptitle("Interpolacja kwadratowa na " + str(n) + " węzłach równoległych")
+    axs[0].plot(X, f(X), label="Funkcja")
+    axs[0].plot(X, quadratic_spline(X, nodes, n, 0), label="Interpolacja")
+    axs[0].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    axs[0].set_title("Interpolacja z warunkiem naturalnych granic")
+    axs[0].set_xlabel("X")
+    axs[0].set_ylabel("Y")
+    axs[0].legend()
+
+    axs[1].plot(X, f(X), label="Funkcja")
+    axs[1].plot(X, quadratic_spline(X, nodes, n, 1), label="Interpolacja")
+    axs[1].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    axs[1].set_title("Interpolacja z warunkiem zaciśniętych granic")
+    axs[1].set_xlabel("X")
+    axs[1].set_ylabel("Y")
+    axs[1].legend()
+    fig.set_size_inches(14, 7)
+    plot.show()
+
+
 def drawCubicBothNodes(X, paraller, cheby, n, type=0):
     fig, axs = plot.subplots(1, 2)
 
     if type == 0:
-        mode = "naturalnym"
+        mode = "naturalnych granic"
     else:
-        mode = "z zaciśniętymi granicami"
+        mode = "zaciśniętych granic"
 
     fig.suptitle("Interpolacja sześcienna  na " + str(n) + " węzłach z warunkiem " + mode)
     axs[0].plot(X, f(X), label="Funkcja")
@@ -212,43 +334,49 @@ def drawCubicBothNodes(X, paraller, cheby, n, type=0):
     plot.show()
 
 
-def drawCubic(X, nodes, n, type=0):
-    if type == 0:
-        mode = "naturalnym"
-    else:
-        mode = "z zaciśniętymi granicami"
+def drawAll(X, nodes, n):
+    fig, axs = plot.subplots(2, 2)
+    fig.suptitle("Interpolacje na " + str(n) + " węzłach równoległych")
+    axs[0][0].plot(X, f(X), label="Funkcja")
+    axs[1][0].plot(X, f(X), label="Funkcja")
+    axs[0][1].plot(X, f(X), label="Funkcja")
+    axs[1][1].plot(X, f(X), label="Funkcja")
+    axs[0][0].set_xlabel("X")
+    axs[1][0].set_xlabel("X")
+    axs[0][1].set_xlabel("X")
+    axs[1][1].set_xlabel("X")
+    axs[0][0].set_ylabel("Y")
+    axs[1][0].set_ylabel("Y")
+    axs[0][1].set_ylabel("Y")
+    axs[1][1].set_ylabel("Y")
 
-    if nodes[0] == 0:
-        nodes_mode = "równoległych"
-    else:
-        nodes_mode = "Czebyszewa"
-    plot.suptitle("Interpolacja sześcienna na " + str(n) + "na węzłach" + nodes_mode + " z warunkiem granicznym" + mode)
-    plot.plot(X, f(X), label="Funckja")
-    plot.plot(X, cubic_spline(X, nodes, n, type), label="Interpolacja")
-    plot.scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
-    plot.xlabel("X")
-    plot.ylabel("Y")
-    plot.legend()
-    plot.show()
+    axs[0][0].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    axs[1][0].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    axs[0][1].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
+    axs[1][1].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
 
+    axs[0][0].legend()
+    axs[1][0].legend()
+    axs[0][1].legend()
+    axs[1][1].legend()
 
-def drawQuad(X, nodes, n, type=0):
-    if type == 0:
-        mode = "naturalnym"
-    else:
-        mode = "z zaciśniętymi granicami"
+    axs[0][0].plot(X, cubic_spline(X, nodes, n, 0), label="Interpolacja")
+    axs[1][0].plot(X, quadratic_spline(X, nodes, n, 0), label="Interpolacja")
+    axs[0][1].plot(X, cubic_spline(X, nodes, n, 1), label="Interpolacja")
+    axs[1][1].plot(X, quadratic_spline(X, nodes, n, 1), label="Interpolacja")
 
-    if nodes[0] == 0:
-        nodes_mode = "równoległych"
-    else:
-        nodes_mode = "Czebyszewa"
-    plot.suptitle("Interpolacja kwadratowa na " + str(n) + "na węzłach" + nodes_mode + " z warunkiem granicznym" + mode)
-    plot.plot(X, f(X), label="Funckja")
-    plot.plot(X, cubic_spline(X, nodes, n, type), label="Interpolacja")
-    plot.scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
-    plot.xlabel("X")
-    plot.ylabel("Y")
-    plot.legend()
+    axs[0][0].set_title("Interpolacja sześcienna z warunkiem naturalnych granic")
+    axs[1][0].set_title("Interpolacja sześcienna z warunkiem zaciśniętych granic")
+    axs[0][1].set_title("Interpolacja kwadratowa z warunkiem naturalnych granic")
+    axs[1][1].set_title("Interpolacja kwadratowa z warunkiem zaciśniętych granic")
+
+    axs[0][0].legend()
+    axs[1][0].legend()
+    axs[0][1].legend()
+    axs[1][1].legend()
+
+    fig.set_size_inches(14, 9)
+
     plot.show()
 
 
@@ -256,9 +384,9 @@ def drawQuadBothNodes(X, paraller, cheby, n, type=0):
     fig, axs = plot.subplots(1, 2)
 
     if type == 0:
-        mode = "naturalnym"
+        mode = "naturalnych granic"
     else:
-        mode = "z zaciśniętymi granicami"
+        mode = "zaciśniętych granic"
 
     fig.suptitle("Interpolacja kwadratowa na " + str(n) + " węzłach z warunkiem " + mode)
     axs[0].plot(X, f(X), label="Funkcja")
@@ -281,19 +409,19 @@ def drawQuadBothNodes(X, paraller, cheby, n, type=0):
     plot.show()
 
 
-n = 500
-cheby_nodes = chebyshev_disrtibution(n, min_x, max_x)
-parallel_nodess = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
+n = 400
+nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
 X = np.arange(min_x, max_x + 0.01, 0.01)
+ens = [4, 5, 11, 12, 15, 20, 30, 40, 50, 60, 75, 100, 200, 300, 400]
+# tableQuad(ens,X)
+# tableCubic(ens,X)
 
-# cubic_spline(X, cheby_nodes, n, 1)
-# quadratic_spline(X, cheby_nodes, n, 1)
 
-# drawCubicBothNodes(X, parallel_nodess, cheby_nodes, n, 0)
-# drawCubicBothNodes(X, parallel_nodess, cheby_nodes, n, 1)
-#
-# drawQuadBothNodes(X, parallel_nodess, cheby_nodes, n, 0)
-# drawQuadBothNodes(X, parallel_nodess, cheby_nodes, n, 1)
+# drawCubicBothType(X,nodes,n)
+# drawQuadBothType(X,nodes,n)
 
-drawCubic(X, parallel_nodess, n, 0)
-drawQuad(X, parallel_nodess, n, 1)
+
+# drawCubic(X, parallel_nodess, n, 0)
+# drawQuad(X, parallel_nodess, n, 1)
+
+drawAll(X, nodes, n)
