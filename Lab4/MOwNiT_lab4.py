@@ -208,7 +208,7 @@ def quadratic_spline(X, nodes, n, type=0):
 
 
 def drawFunction():
-    plot.plot(X, f(X), label="Funckja")
+    plot.plot(X, f(X), label="Funkcja interpolowana")
     plot.xlabel("X")
     plot.ylabel("Y")
     plot.legend()
@@ -227,7 +227,7 @@ def drawCubic(X, nodes, n, type=0):
         nodes_mode = "Czebyszewa"
     plot.suptitle(
         "Interpolacja sześcienna na " + str(n) + " na węzłach " + nodes_mode + " z warunkiem " + mode)
-    plot.plot(X, f(X), label="Funckja")
+    plot.plot(X, f(X), label="Funckja interpolowana")
     plot.plot(X, cubic_spline(X, nodes, n, type), label="Interpolacja")
     plot.scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
     plot.xlabel("X")
