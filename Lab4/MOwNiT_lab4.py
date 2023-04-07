@@ -3,11 +3,14 @@ import pandas as pd
 from math import pi, cos, sin
 import matplotlib.pyplot as plot
 
+# mine
 k = 1
 m = 2
 
 min_x = 0
 max_x = 3 * pi
+
+
 
 
 def f(x):
@@ -337,10 +340,10 @@ def drawCubicBothNodes(X, paraller, cheby, n, type=0):
 def drawAll(X, nodes, n):
     fig, axs = plot.subplots(2, 2)
     fig.suptitle("Interpolacje na " + str(n) + " węzłach równoległych")
-    axs[0][0].plot(X, f(X), label="Funkcja")
-    axs[1][0].plot(X, f(X), label="Funkcja")
-    axs[0][1].plot(X, f(X), label="Funkcja")
-    axs[1][1].plot(X, f(X), label="Funkcja")
+    axs[0][0].plot(X, f(X), label="F. interpolowana")
+    axs[1][0].plot(X, f(X), label="F. interpolowana")
+    axs[0][1].plot(X, f(X), label="F. interpolowana")
+    axs[1][1].plot(X, f(X), label="F. interpolowana")
     axs[0][0].set_xlabel("X")
     axs[1][0].set_xlabel("X")
     axs[0][1].set_xlabel("X")
@@ -360,10 +363,10 @@ def drawAll(X, nodes, n):
     axs[0][1].legend()
     axs[1][1].legend()
 
-    axs[0][0].plot(X, cubic_spline(X, nodes, n, 0), label="Interpolacja")
-    axs[1][0].plot(X, quadratic_spline(X, nodes, n, 0), label="Interpolacja")
-    axs[0][1].plot(X, cubic_spline(X, nodes, n, 1), label="Interpolacja")
-    axs[1][1].plot(X, quadratic_spline(X, nodes, n, 1), label="Interpolacja")
+    axs[0][0].plot(X, cubic_spline(X, nodes, n, 0), label="F. interpolująca")
+    axs[1][0].plot(X, quadratic_spline(X, nodes, n, 0), label="F. interpolująca")
+    axs[0][1].plot(X, cubic_spline(X, nodes, n, 1), label="F. interpolująca")
+    axs[1][1].plot(X, quadratic_spline(X, nodes, n, 1), label="F. interpolująca")
 
     axs[0][0].set_title("Interpolacja sześcienna z warunkiem naturalnych granic")
     axs[1][0].set_title("Interpolacja sześcienna z warunkiem zaciśniętych granic")
@@ -375,7 +378,7 @@ def drawAll(X, nodes, n):
     axs[0][1].legend()
     axs[1][1].legend()
 
-    fig.set_size_inches(14, 9)
+    fig.set_size_inches(15, 11)
 
     plot.show()
 
@@ -424,4 +427,4 @@ ens = [4, 5, 11, 12, 15, 20, 30, 40, 50, 60, 75, 100, 200, 300, 400]
 # drawCubic(X, parallel_nodess, n, 0)
 # drawQuad(X, parallel_nodess, n, 1)
 
-drawAll(X, nodes, n)
+drawAll(X,nodes,n)

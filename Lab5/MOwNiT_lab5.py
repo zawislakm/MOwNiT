@@ -3,11 +3,14 @@ import pandas as pd
 from math import pi, cos, sin
 import matplotlib.pyplot as plot
 
+# mine
 k = 1
 m = 2
 
 min_x = 0
 max_x = 3 * pi
+
+
 
 
 def f(x):
@@ -67,6 +70,8 @@ def drawAprox(nodes: list, X: list, m: int, w: list = None):
 
 
 n = 20
+
+n = 30
 X = np.arange(min_x, max_x + 0.01, 0.01)
 nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
 

@@ -144,19 +144,19 @@ def drawLagrange2(parallel_nodes, cheby_nodes, n):
 
 def drawTogetherLagrangeNewton(nodes, n, type):
     fig, axs = plot.subplots(1, 2)
-    fig.suptitle("Interpolacje na " + str(n) + " węzłach")
-    axs[0].plot(X, f(X), label="Funkcja")
-    axs[0].plot(X, Lagrange(X, nodes, n), label="Interpolacja")
+    fig.suptitle("Interpolacje na " + str(n) +" " +type)
+    axs[0].plot(X, f(X), label="F. interpolowana")
+    axs[0].plot(X, Lagrange(X, nodes, n), label="F. interpolująca")
     axs[0].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
-    axs[0].set_title("Interpolacja Lagrange'a na " + type)
+    axs[0].set_title("Interpolacja Lagrange'a")
     axs[0].set_xlabel("X")
     axs[0].set_ylabel("Y")
     axs[0].legend()
 
-    axs[1].plot(X, f(X), label="Funkcja")
-    axs[1].plot(X, Newton(X, nodes, n), label="Interpolacja")
+    axs[1].plot(X, f(X), label="F. interpolowana")
+    axs[1].plot(X, Newton(X, nodes, n), label="F. interpolująca")
     axs[1].scatter(nodes, f(nodes), color="red", label="Punkty wspólne")
-    axs[1].set_title("Interpolacja Newtona na " + type)
+    axs[1].set_title("Interpolacja Newtona")
     axs[1].set_xlabel("X")
     axs[1].set_ylabel("Y")
     axs[1].legend()
@@ -182,7 +182,7 @@ def sqrdiffrence(X, interpoleted, n):
     return ans
 
 
-n = 75  # number of nodes
+n = 39  # number of nodes
 X = np.arange(min_x, max_x + 0.01, 0.01)
 parallel_nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
 cheby_nodes = chebyshev_disrtibution(n, min_x, max_x)
@@ -192,14 +192,14 @@ type_c = "węzłach Czebyszewa"
 # drawFunction()
 # drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
 # drawTogetherLagrangeNewton(cheby_nodes, n, type_c)
-drawNewton2(parallel_nodes, cheby_nodes, n)
+#drawNewton2(parallel_nodes, cheby_nodes, n)
 # drawLagrange2(parallel_nodes, cheby_nodes, n)
 # drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
 # drawTogetherLagrangeNewton(parallel_nodes, n, type_p)
 # drawLagrange2(parallel_nodes, cheby_nodes, n)
 # drawNewton2(parallel_nodes, cheby_nodes, n)
 
-
+drawTogetherLagrangeNewton(parallel_nodes,n,type_p)
 def tableLagrange(ens, X):
     outcome = []
     for n in ens:
@@ -234,7 +234,7 @@ def tableNewton(ens, X):
 
 ens = [3, 4, 5, 7, 9, 10, 11, 12, 15, 20, 30, 40, 50, 60, 75]
 # tableNewton(ens, X)
-print()
+
 # tableLagrange(ens, X)
 
 
