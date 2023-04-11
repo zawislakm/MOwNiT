@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from math import pi, cos, sin
 import matplotlib.pyplot as plot
+import csv
 
-# mine
 k = 1
 m = 2
 
@@ -11,12 +11,18 @@ min_x = 0
 max_x = 3 * pi
 
 
-
-
 def f(x):
     if not isinstance(x, float):
         return [sin(m * i) * sin(k * i ** 2 / pi) for i in x]
     return sin(m * x) * sin(k * x ** 2 / pi)
+
+
+def drawFunction():
+    plot.plot(X, f(X), label="Funkcja aproksymowana")
+    plot.xlabel("X")
+    plot.ylabel("Y")
+    plot.legend()
+    plot.show()
 
 
 def aprox(nodes: list, n: int, X: list, m: int, w: list = None) -> list:
@@ -45,16 +51,7 @@ def aprox(nodes: list, n: int, X: list, m: int, w: list = None) -> list:
         for k in range(m + 1):
             elem += A[k] * X[i] ** k
         ans[i] = elem
-    print(len(ans))
     return ans
-
-
-def drawFunction():
-    plot.plot(X, f(X), label="Funckja")
-    plot.xlabel("X")
-    plot.ylabel("Y")
-    plot.legend()
-    plot.show()
 
 
 def drawAprox(nodes: list, X: list, m: int, w: list = None):
@@ -69,13 +66,52 @@ def drawAprox(nodes: list, X: list, m: int, w: list = None):
     plot.show()
 
 
-n = 20
+def diffrecne(X, interpoleted, n):
+    ans = 0
+    for i in range(0, len(X)):
+        tmp = abs(f(X[i]) - interpoleted[i])
+        ans = max(ans, tmp)
+    return ans
 
-n = 30
+
+def sqrdiffrence(X, interpoleted, n):
+    ans = 0
+    for i in range(0, len(X)):
+        tmp = f(X[i]) - interpoleted[i]
+        ans += (tmp ** 2)
+    ans = (ans ** 0.5) / n
+    return ans
+
+
+def tableAprox(X):
+    ens = [4, 5, 7, 10, 15, 20, 30, 40, 70]
+    ems = [2, 5, 8, 10, 15]
+    outcome = []
+
+    for n in ens:
+        parallel_nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
+        for em in ems:
+            ans = aprox(parallel_nodes, n, X, em)
+            outcome.append(
+                [n, em, diffrecne(X, ans, n), sqrdiffrence(X, ans, n)])
+
+    df = pd.DataFrame(outcome,
+                      columns=["n", "m", "Natural max error", "Natural square error"])
+
+    with open('results.csv', mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(["n", "m", "Natural max error", "Natural square error"])
+        for row in outcome:
+            writer.writerow(row)
+    return df
+
+
+n = 20
+mn = 10
 X = np.arange(min_x, max_x + 0.01, 0.01)
 nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
 
+# drawFunction()
+drawAprox(nodes, X, mn)
 
 
-drawAprox(nodes, X,6)
-drawAprox(nodes, X,20)

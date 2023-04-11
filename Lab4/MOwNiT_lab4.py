@@ -420,11 +420,9 @@ ens = [4, 5, 11, 12, 15, 20, 30, 40, 50, 60, 75, 100, 200, 300, 400]
 # tableCubic(ens,X)
 
 
-# drawCubicBothType(X,nodes,n)
-# drawQuadBothType(X,nodes,n)
-
-
-# drawCubic(X, parallel_nodess, n, 0)
-# drawQuad(X, parallel_nodess, n, 1)
+drawCubicBothType(X,nodes,n)
+drawQuadBothType(X,nodes,n)
 
 drawAll(X,nodes,n)
+
+drawFunction()
