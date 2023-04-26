@@ -182,7 +182,7 @@ def sqrdiffrence(X, interpoleted, n):
     return ans
 
 
-n = 39  # number of nodes
+n = 12 # number of nodes
 X = np.arange(min_x, max_x + 0.01, 0.01)
 parallel_nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
 cheby_nodes = chebyshev_disrtibution(n, min_x, max_x)
