@@ -9,8 +9,8 @@ import math
 k = 1
 m = 2
 
-min_x = -3*pi
-max_x = 8 * pi
+min_x = 0
+max_x = 3 * pi
 
 
 def f(x):
@@ -18,43 +18,11 @@ def f(x):
         return [sin(m * i) * sin(k * i ** 2 / pi) for i in x]
     return sin(m * x) * sin(k * x ** 2 / pi)
 
-# min_x = -pi
-# max_x = 2*pi
-# def f(x):
-#     if not isinstance(x, float):
-#         return [e **(-2*sin(2*i))+2*sin(2*i)-1 for i in x]
-#     return e **(-2*sin(2*x))+2*sin(2*x)-1
 
 
-def aproxOld(nodes: list, n: int, X: list, m: int, ) -> list:
-    A = [0 for _ in range(m + 1)]
-    for k in range(m + 1):
-        for i in range(n):
-            A[k] += f(nodes[i]) * cos((k + 1) * nodes[i])
-        A[k] *= (2 / n)
-
-    B = [0 for _ in range(m + 1)]
-    for k in range(m + 1):
-        for i in range(n):
-            B[k] += f(nodes[i]) * sin((k + 1) * nodes[i])
-        B[k] *= (2 / n)
-
-    # def transformEX(x) -> int:
-    #     x_prim = ((x - min_x) / (max_x - min_x)) * (pi - (-1 * pi)) + (-1 * pi)
-    #     return x_prim
-
-    ans = [0 for _ in range(len(X))]
-    for j in range(len(X)):
-        # x_p = transformEX(X[j])
-        x_p = X[j]
-        ans[j] = A[0] / 2
-        for k in range(1, m + 1):
-            ans[j] += A[k] * cos(k * x_p) + B[k] * sin(k * x_p)
-
-    return ans
 
 def aprox(nodes: list, n: int, X: list, m: int):
-    def transform_x(x:int):
+    def transform_x(x: int):
         return ((x - nodes[0]) / (nodes[-1] - nodes[0])) * (pi - (-pi)) + (-pi)
 
     def calc_ak(k: int):
@@ -63,13 +31,12 @@ def aprox(nodes: list, n: int, X: list, m: int):
     def calc_bk(k: int):
         return 2 / n * sum(f(nodes[i]) * sin(k * transform_x(nodes[i])) for i in range(n))
 
-
     ak = list(map(calc_ak, range(m + 1)))
     bk = list(map(calc_bk, range(m + 1)))
 
     def fa(x):
         x = transform_x(x)
-        return .5 * ak[0] + sum(ak[k] * cos(k * x) + bk[k] * sin(k * x) for k in range(1, m+1))
+        return .5 * ak[0] + sum(ak[k] * cos(k * x) + bk[k] * sin(k * x) for k in range(1, m + 1))
 
     ans = [0 for _ in range(len(X))]
 
@@ -77,6 +44,7 @@ def aprox(nodes: list, n: int, X: list, m: int):
         ans[j] = fa(X[j])
 
     return ans
+
 
 def diffrecne(X, interpoleted, n):
     ans = 0
@@ -105,7 +73,7 @@ def drawFunction():
 
 def drawAprox(nodes: list, X: list, m: int) -> None:
     n = len(nodes)
-    plot.suptitle("Aproksymacja stopnia " + str(m) + " na " + str(n) + " węzłach równoległychMati")
+    plot.suptitle("Aproksymacja stopnia " + str(m) + " na " + str(n) + " węzłach równoległych")
     plot.plot(X, f(X), label="Funckja")
     plot.plot(X, aprox(nodes, n, X, m), label="Aproksymacja")
     plot.scatter(nodes, f(nodes), color="red", label="Węzły")
@@ -115,11 +83,8 @@ def drawAprox(nodes: list, X: list, m: int) -> None:
     plot.show()
 
 
-
-
-
 def drawAproxAll(nodes: list, X: list):
-    ems = [2, 3, 5, 7, 8, 9]
+    ems = [2, 3, 5, 9, 15, 20]
     n = len(nodes)
     fig, axs = plot.subplots(2, 3)
     fig.suptitle("Aproksymacja na " + str(n) + " węzłach równoległych")
@@ -129,29 +94,31 @@ def drawAproxAll(nodes: list, X: list):
 
         axs[row][col].plot(X, f(X), label="Funckja")
         axs[row][col].plot(X, aprox(nodes, n, X, ems[i]), label="Aproksymacja")
-        #axs[row][col].scatter(nodes, f(nodes), color="red", label="Węzły")
+        axs[row][col].scatter(nodes, f(nodes), color="red", label="Węzły")
         axs[row][col].set_xlabel("X")
         axs[row][col].set_ylabel("Y")
         axs[row][col].set_title("Stopień wielomianu " + str(ems[i]))
         axs[row][col].legend()
 
     tableAproxGivenN(X, n, ems)
+    tableAproxGivenN(X, n, ems)
     fig.set_size_inches(15, 10)
     plot.show()
 
 
 def drawAproxAllM(X: list, m: int):
+    ens = [50, 60, 80, 100, 200, 300]
 
-    ens = [20, 30, 40, 60,70, 80, 100, 200,300]
-
-    fig, axs = plot.subplots(3, 3)
+    fig, axs = plot.subplots(2, 3)
     fig.suptitle("Aproksymacja stopnia  " + str(m))
     for i in range(len(ens)):
-        if m > (ens[i])/2:
+        if m > (ens[i]) / 2:
             continue
         nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (ens[i] - 1))
+        print(nodes[-1])
         row = i // 3
         col = i % 3
+        print(i,row,col)
         axs[row][col].plot(X, f(X), label="Funckja")
         axs[row][col].plot(X, aprox(nodes, ens[i], X, m), label="Aproksymacja n=" + str(ens[i]))
         axs[row][col].scatter(nodes, f(nodes), color="red", label="Węzły")
@@ -160,17 +127,20 @@ def drawAproxAllM(X: list, m: int):
         # axs[row][col].set_title("Liczba węzłów " + str(ens[i]))
         axs[row][col].legend()
 
-    tableAproxGivenM(X,ens,m)
+    tableAproxGivenM(X, ens, m)
+
+
     fig.set_size_inches(15, 10)
     fig.tight_layout()
     plot.show()
 
+
 def drawAproxBetween(X: list):
-    n1 = 40
-    n2 = 200
-    ems = [7,9]
+    n1 = 20
+    n2 = 30
+    ems = [9,9]
     fig, axs = plot.subplots(2, 2)
-    #fig.suptitle("Porównanie aproksymacji")
+    # fig.suptitle("Aproksymacje 9 stopnia")
     n1nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n1 - 1))
     n2nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n2 - 1))
 
@@ -183,6 +153,8 @@ def drawAproxBetween(X: list):
         axs[i][0].set_title("Aproksymacja na " + str(n1) + " węzłach")
         axs[i][0].legend()
 
+
+
         axs[i][1].plot(X, f(X), label="Funckja")
         axs[i][1].plot(X, aprox(n2nodes, n2, X, ems[i]), label="Aproksymacja m= " + str(ems[i]))
         axs[i][1].scatter(n2nodes, f(n2nodes), color="red", label="Węzły")
@@ -190,9 +162,16 @@ def drawAproxBetween(X: list):
         axs[i][1].set_ylabel("Y")
         axs[i][1].set_title("Aproksymacja na " + str(n2) + " węzłach")
         axs[i][1].legend()
+
+        n1 = 40
+        n2 = 60
+        n1nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n1 - 1))
+        n2nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n2 - 1))
+
     fig.set_size_inches(15, 10)
     fig.tight_layout()
     plot.show()
+
 
 def tableAproxGivenN(X, n, ems):
     outcome = []
@@ -203,7 +182,7 @@ def tableAproxGivenN(X, n, ems):
             break
         ans = aprox(parallel_nodes, n, X, em)
         outcome.append(
-            [em, round(diffrecne(X, ans, n),5), round(sqrdiffrence(X, ans, n),5)])
+            [em, round(diffrecne(X, ans, n), 5), round(sqrdiffrence(X, ans, n), 5)])
 
     df = pd.DataFrame(outcome,
                       columns=["m", "Natural max error", "Natural square error"])
@@ -221,13 +200,12 @@ def tableAproxGivenM(X, ens, m):
     outcome = []
 
     for en in ens:
-        if m > (en-1)/2:
+        if m > (en - 1) / 2:
             continue
         noddes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (en - 1))
-        ans = aprox(noddes,en,X,m)
+        ans = aprox(noddes, en, X, m)
         outcome.append(
-            [en, round(diffrecne(X, ans, en),5), round(sqrdiffrence(X, ans, en),5)])
-
+            [en, round(diffrecne(X, ans, en), 5), round(sqrdiffrence(X, ans, en), 5)])
 
     df = pd.DataFrame(outcome,
                       columns=["m", "Natural max error", "Natural square error"])
@@ -243,7 +221,7 @@ def tableAproxGivenM(X, ens, m):
 
 def tableAprox(X):
     ens = [10, 20, 30, 40, 60, 80, 100, 200]
-    ems = [2, 3, 5, 7, 8, 9]
+    ems = [2, 3, 5, 9, 15, 20]
 
     outcome = []
     dif_outcome = [["-" for _ in range(len(ems) + 1)] for _ in range(len(ens) + 1)]
@@ -263,7 +241,7 @@ def tableAprox(X):
         for j in range(1, len(ems) + 1):
 
             em = ems[j - 1]
-            if em > (n-1)/2:
+            if em > (n - 1) / 2:
                 continue
             ans = aprox(parallel_nodes, n, X, em)
             dif = round(diffrecne(X, ans, n), 5)
@@ -295,27 +273,38 @@ def tableAprox(X):
 
 
 n = 200
-nm = 9
+nm = 20
 X = np.arange(min_x, max_x + 0.01, 0.01)
 nodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (n - 1))
+print(nodes[0], nodes[-1])
+print(max_x)
+
+# drawAproxAll(nodes,X)
+# drawAproxAll(nodes, X)
+# drawAproxAllM(X, nm)
+# drawAprox(nodes, X, nm)
 # drawAproxBetween(X)
-#drawFunction()
+# drawFunction()
 # drawAproxAllM(X,nm)
-#drawAproxAll(nodes,X)
+# drawAproxAll(nodes,X)
 # drawAproxMati(nodes, X, nm)
 # drawAproxBot(nodes, X, nm)
 # aproxtry(nodes, n, X, m)
 # drawAprox(nodes, X, m)
 # drawAproxBetween(X)
-#drawAproxAll(nodes, X)
+# drawAproxAll(nodes, X)
 # tableAprox(X)
-#tableAprox(X)
-#tableAprox(X)
+# tableAprox(X)
+# tableAprox(X)
 
-drawFunction()
+# drawFunction()
+# drawAproxBetween(X)
 
 # ens = [10, 20, 30, 40, 60, 80, 100, 200]
 #
 # for en in ens:
 #     ennodes = np.arange(min_x, max_x + 0.01, (max_x - min_x) / (en - 1))
 #     drawAproxAll(ennodes,X)
+
+
+# tableAprox(X)
