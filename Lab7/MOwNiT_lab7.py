@@ -15,7 +15,7 @@ sns.set(rc={"figure.dpi": 200, "savefig.dpi": 200})
 import matplotlib.colors as colors
 
 
-def show_heatmap(df,name='', annot=True, norm=None, xlabel='Start x values', ylabel='p values', title='', **kwargs):
+def show_heatmap(df, name='', annot=True, norm=None, xlabel='Start x values', ylabel='p values', title='', **kwargs):
     plt.figure(figsize=(15, 10))
     cmap = sns.color_palette("YlGnBu")
     s = sns.heatmap(df, cmap=cmap, annot=annot, norm=colors.LogNorm(), mask=df.isnull(), **kwargs)
@@ -48,7 +48,7 @@ max_iteration = 100000
 
 ros = [10e-3, 10e-4, 10e-6, 10e-8, 10e-10, 10e-16]
 
-wolfram_solution = 0.56590291432518767530  # 30 znaków po przecinku
+wolfram_solution = 0.56590291432518767530
 
 
 def error_value(x):
@@ -91,21 +91,18 @@ def calculate_newton(stop_criterion, step=0.1):
     df.applymap(lambda cell: round(cell[0], 6)).to_csv('netwon_values.csv')
     df.applymap(lambda cell: cell[1]).to_csv('newton_interations.csv')
     # df.applymap(lambda cell: cell[2]).to_csv('newton_error.csv')
-    # napisz funkcje która bedzie rysować mape ciepła dla dataframe
     show_heatmap(df.applymap(lambda cell: cell[2]))
 
 
 # calculate_newton(stop_criterion1)
 
 
-def next_step_secant(xi0, xi1):
+def next_step_secant(xi0, xi1, start):
     try:
         return xi1 - ((xi1 - xi0) / (f(xi1) - f(xi0))) * f(xi1)
     except ZeroDivisionError:
-        # print("Error: Division by zero occurred")
-        # Możesz dodać odpowiednie działanie w przypadku wystąpienia dzielenia przez zero
-        # Na przykład, zwrócić None lub inny sygnalizator błędu.
-        # W tym przykładzie wypisujemy komunikat o błędzie.
+        if start == 1:
+            print(xi0, xi1)
         return None
 
 
@@ -114,21 +111,22 @@ def secant_method(x0, x1, stop_criterion, p):
     xi1 = x0
     xi2 = x1
     iterations = 0
+    start = x0
 
     while not stop_criterion(xi1, xi2, p) and iterations < max_iteration:
-        xi2, xi1, xi0 = next_step_secant(xi2, xi1), xi2, xi1
+        xi2, xi1, xi0 = next_step_secant(xi2, xi1, start), xi2, xi1
 
         if xi2 is None:
-            return xi1,iterations
+            return xi1, iterations
         iterations += 1
 
-    return xi2,iterations
+    return xi2, iterations
     # return round(xi2, 8), iterations
 
 
 def calculate_secant(stop_criterion, step=0.1):
-    start_x_forward = [i / 10 for i in range(int(a * 10), int((b + step) * 10), int(step * 10))]
-    start_x_backward = [i / 10 for i in range(int(b * 10), int((a - step) * 10), int(-step * 10))]
+    start_x_forward = [i / 10 for i in range(int(a * 10), int((b) * 10), int(step * 10))]
+    start_x_backward = [i / 10 for i in range(int(b * 10), int((a) * 10), int(-step * 10))]
 
     print(f"Forward: {start_x_forward}")
     print(f"Backward: {start_x_backward}")
@@ -140,55 +138,153 @@ def calculate_secant(stop_criterion, step=0.1):
         for j in range(len(ros)):
             for_value, for_inter = secant_method(start_x_forward[i], b, stop_criterion, ros[j])
             df_forward.iloc[i, j] = (for_value, for_inter, error_value(for_value))
+
+            # backward
             back_value, back_inter = secant_method(start_x_backward[i], a, stop_criterion, ros[j])
             df_backward.iloc[i, j] = (back_value, back_inter, error_value(back_value))
         # print("Ended:" ,start_x_forward[i],ros[i])
 
-    df_forward.applymap(lambda cell: round(cell[0],6)).to_csv('secant_values_forward.csv')
+    df_forward.applymap(lambda cell: round(cell[0], 6)).to_csv('secant_values_forward.csv')
     df_forward.applymap(lambda cell: cell[1]).to_csv('secant_interations_forward.csv')
     # df_forward.applymap(lambda cell: cell[2]).to_csv('secant_error_forward.csv')
 
-    df_backward.applymap(lambda cell: round(cell[0],6)).to_csv('secant_values_backward.csv')
+    # bacwakrd
+    df_backward.applymap(lambda cell: round(cell[0], 6)).to_csv('secant_values_backward.csv')
     df_backward.applymap(lambda cell: cell[1]).to_csv('secant_interations_backward.csv')
     # df_backward.applymap(lambda cell: cell[2]).to_csv('secant_error_backward.csv')
 
-    show_heatmap(df_forward.applymap(lambda cell: cell[2]),"forward")
-    show_heatmap(df_backward.applymap(lambda cell: cell[2]),"backward")
+    # heatmap
+    show_heatmap(df_forward.applymap(lambda cell: cell[2]), "forward")
+    show_heatmap(df_backward.applymap(lambda cell: cell[2]), "backward")
 
 
-calculate_secant(stop_criterion1)
+# calculate_secant(stop_criterion2)
+
+# exercise 2
+
+def f1(X):
+    x1, x2, x3 = X[0], X[1], X[2]
+    return x1 ** 2 - 4 * x2 ** 2 + x3 ** 3 - 1
 
 
-def newton_method(x, mode):
-    x1 = x - f(x) / df(x)
-
-    for i in range(1, max_iteration):
-
-        if mode == 1:
-            if abs(x - x1) < epsilon:
-                return "moduł różnicy: {}".format(abs(x - x1)), i, x1
-        else:
-            if abs(f(x1)) < epsilon:
-                return "moduł funkcji: {}".format(abs(f(x1))), i, x1
-            x0, x1 = x1, x1 - f(x1) / df(x1)
-    return -1, -1, x1
+def f2(X):
+    x1, x2, x3 = X[0], X[1], X[2]
+    return 2 * x1 ** 2 + 4 * x2 ** 2 - 3 * x3
 
 
-def secant_method(a, b, mode):
-    x0, x1 = a, b
+def f3(X):
+    x1, x2, x3 = X[0], X[1], X[2]
+    return x1 ** 2 - 2 * x2 + x3 ** 2 - 1
 
-    for i in range(0, max_iteration):
-        if mode == 1:
-            if abs(x0 - x1) < epsilon:
-                return "moduł różnicy: {}".format(abs(x0 - x1)), i, x1
-        else:
-            if abs(f(x1)) < epsilon:
-                return "moduł funkcji: {}".format(abs(f(x1))), i, x1
-        if f(x1) - f(x0) == 0:
-            return "-", "-", "-"
-        x0, x1 = x1, x1 - f(x1) * (x1 - x0) / (f(x1) - f(x0))
-        # if(f(x1)*f(tmp)<=0):
-        #     x0, x1 = x, x1 - f(x1)*(x1-x0)/(f(x1)-f(x0))
-        # else:
-        #     x0, x1 = x1, x1 - f(x1)*(x1-x0)/(f(x1)-f(x0))
-    return -1, -1, x1
+
+def F(X):
+    return [f1(X), f2(X), f3(X)]
+
+
+def J1(X):
+    x1, x2, x3 = X[0], X[1], X[2]
+    return [2 * x1, - 8 * x2, 3 * x3 ** 2]
+
+
+def J2(X):
+    x1, x2, x3 = X[0], X[1], X[2]
+    return [4 * x1, 8 * x2, - 3]
+
+
+def J3(X):
+    x1, x2, x3 = X[0], X[1], X[2]
+    return [2 * x1, -2, 2 * x3]
+
+
+def J(X):
+    return [J1(X), J2(X), J3(X)]
+
+
+def ex2_stop_criterion1(x_curr, x_prev, p) -> bool:
+    n = len(x_curr)
+    for i in range(n):
+        if abs(x_curr[i] - x_prev[i]) >= p:
+            return False
+
+    return True
+
+
+def ex2_stop_criterion2(x_curr, x_prev, p) -> bool:
+    if f1(x_curr) >= p:
+        return False
+    if f2(x_curr) >= p:
+        return False
+    if f3(x_curr) >= p:
+        return False
+    return True
+
+
+def ex2_step(X):
+    S = np.linalg.solve(J(X), F(X))
+    return X - S
+
+
+def newton_matrix(X, stop_critertion, p, max_intrations=1000):
+    x_prev = [float('inf') for _ in range(len(X))]
+    x_curr = X
+    iters = 0
+
+    while not stop_critertion(x_curr, x_prev, p) and iters < max_intrations:
+        try:
+            x_curr, x_prev = ex2_step(x_curr), x_curr
+        except np.linalg.LinAlgError:
+            x_curr = None
+            break
+        iters += 1
+    return x_curr, iters
+
+
+x1wolfram = [-1, 1, -0.917716, 0.917716]
+x2wolfram = [0.5, 0.5, 0.084058, 0.084058]
+x3wolfram = [1, 1, 0.570889, 0.570889]
+
+
+def get_ans() -> list:
+    t = []
+    for i in range(4):
+        # t.append([x1wolfram[i],x2wolfram[i],x2wolfram[i]])
+        t.append(x1wolfram[i])
+    print(t)
+    return t
+
+
+def solution_match(ans, p=1e-7) -> int:
+    # print(ans)
+    x1, x2, x3 = round(ans[0], 6), round(ans[1], 6), round(ans[2], 6)
+    for i in range(4):
+        if abs(x1 - x1wolfram[i]) < p and abs(x2 - x2wolfram[i]) < p and abs(x3 - x3wolfram[i]) < p:
+            return i
+
+    return -1
+
+
+def newton_all(stop_criterion):
+    array = [round(i * 0.1, 2) for i in range(-5, 6)]
+    print(array)
+    ans = get_ans()
+    count = 0
+    df = pd.DataFrame(0, columns=ros, index=ans)
+    for a in array:
+        for b in array:
+            for c in array:
+                X = [a, b, c]
+
+                for i in range(len(ros)):
+                    p = ros[i]
+
+                    ans, iter = newton_matrix(X, stop_criterion, p)
+
+                    if ans is not None:
+                        sol = solution_match(ans)
+                        if sol != -1:
+                            df.iloc[sol, i] += 1
+
+    # df.to_csv('newtonEX2.csv')
+
+
+# newton_all(ex2_stop_criterion1)
